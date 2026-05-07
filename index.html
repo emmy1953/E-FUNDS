@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-FUNDS | Corporate Banking Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="brand-bar">
+        <div class="brand-mark">
+          <span class="brand-icon">EF</span>
+          <div>
+            <p class="brand-name">E-FUNDS</p>
+            <p class="brand-tag">Digital Banking & Payments</p>
+          </div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        <section class="welcome-panel" id="welcomePanel">
+          <div class="welcome-container">
+            <div class="welcome-header">
+              <div class="welcome-icon">EF</div>
+              <h1>E-FUNDS</h1>
+              <p class="welcome-subtitle">Digital Banking & Payments</p>
+            </div>
+
+            <div class="welcome-content">
+              <p class="welcome-intro">Welcome to E-FUNDS, your modern banking solution for fast, secure, and seamless peer-to-peer transfers.</p>
+
+              <div class="features-grid">
+                <div class="feature">
+                  <span class="feature-icon">💳</span>
+                  <h3>Instant Transfers</h3>
+                  <p>Send funds to any user instantly using their username.</p>
+                </div>
+                <div class="feature">
+                  <span class="feature-icon">🔒</span>
+                  <h3>Secure</h3>
+                  <p>Your transactions are protected with modern security practices.</p>
+                </div>
+                <div class="feature">
+                  <span class="feature-icon">📱</span>
+                  <h3>Easy to Use</h3>
+                  <p>Simple interface designed for everyone.</p>
+                </div>
+                <div class="feature">
+                  <span class="feature-icon">🌙</span>
+                  <h3>Dark Mode</h3>
+                  <p>Switch between light and dark themes for your comfort.</p>
+                </div>
+              </div>
+
+              <div class="welcome-stats">
+                <div class="stat">
+                  <span class="stat-number">50K+</span>
+                  <span class="stat-label">Active Users</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-number">$2.5B</span>
+                  <span class="stat-label">Transferred</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-number">24/7</span>
+                  <span class="stat-label">Support</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="welcome-actions">
+              <button id="getStartedButton" class="primary-button large-button">Get Started</button>
+              <p class="welcome-note">Already have an account? Sign in after clicking Get Started.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="auth-panel hidden" id="authPanel">
+          <div class="auth-panel__card">
+            <button id="backToWelcomeButton" class="back-button">
+              <span>← Back</span>
+            </button>
+            
+            <div class="auth-header">
+              <h1>Access your E-FUNDS workspace</h1>
+              <p>Secure login or create your profile to manage balances, send funds, and receive payments.</p>
+            </div>
+
+            <div class="form-switcher">
+              <button class="toggle-button active" data-target="loginForm">Sign In</button>
+              <button class="toggle-button" data-target="signupForm">Sign Up</button>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+              <label>
+                Username
+                <input type="text" id="loginUsername" placeholder="e.g. jsmith" required />
+              </label>
+              <label>
+                Password
+                <input type="password" id="loginPassword" placeholder="••••••••" required />
+              </label>
+              <button type="submit" class="primary-button">Sign In</button>
+            </form>
+
+            <form id="signupForm" class="auth-form hidden">
+              <label>
+                Full name
+                <input type="text" id="signupName" placeholder="e.g. Jane Smith" required />
+              </label>
+              <label>
+                Username
+                <input type="text" id="signupUsername" placeholder="e.g. jsmith" required />
+              </label>
+              <label>
+                Password
+                <input type="password" id="signupPassword" placeholder="••••••••" required />
+              </label>
+              <button type="submit" class="primary-button">Create account</button>
+            </form>
+
+            <div class="auth-note">
+              <p>All transactions are mock data for demonstration purposes.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="dashboard-panel hidden" id="dashboardPanel">
+          <div class="dashboard-topbar">
+            <div>
+              <p class="eyebrow">Welcome back</p>
+              <h2 id="dashboardName">User</h2>
+            </div>
+            <div class="topbar-actions">
+              <button id="themeToggleButton" class="icon-button" title="Toggle dark mode">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                </svg>
+              </button>
+              <button id="signOutButton" class="secondary-button">Sign out</button>
+            </div>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="summary-card balance-card">
+              <div class="summary-title">
+                <div>
+                  <p class="eyebrow">Available balance</p>
+                  <span class="status-pill">Live account</span>
+                </div>
+              </div>
+              <div class="balance-display">
+                <span class="currency">$</span>
+                <span id="balanceAmount">0.00</span>
+              </div>
+              <p class="summary-text">Manage your mock funds, send payments, and track your transactions.</p>
+              <div class="balance-actions">
+                <button class="balance-action-btn send-quick">
+                  <span class="action-icon">⬆</span>
+                  <span>Send</span>
+                </button>
+                <button class="balance-action-btn receive-quick">
+                  <span class="action-icon">⬇</span>
+                  <span>Receive</span>
+                </button>
+              </div>
+            </article>
+
+            <article class="summary-card activity-card">
+              <p class="summary-title">Recent transactions</p>
+              <ul class="activity-list" id="activityList"></ul>
+            </article>
+
+            <article class="summary-card directory-card">
+              <p class="summary-title">Available recipients</p>
+              <ul class="user-directory-list" id="userDirectoryList"></ul>
+            </article>
+          </div>
+
+          <div class="transaction-grid">
+            <article class="transaction-card">
+              <h3>Send funds</h3>
+              <p class="card-copy">Transfer mock value to another user by their username.</p>
+              <form id="sendForm" class="transaction-form">
+                <label>
+                  Recipient username
+                  <input type="text" id="sendRecipient" list="recipientOptions" placeholder="e.g. nora" required />
+                </label>
+                <label>
+                  Amount
+                  <input type="number" id="sendAmount" min="1" step="0.01" placeholder="150.00" required />
+                </label>
+                <button type="submit" class="primary-button">Send now</button>
+                <p class="form-help">Choose a username from the list or type it in.</p>
+              </form>
+              <datalist id="recipientOptions"></datalist>
+            </article>
+
+            <article class="transaction-card receive-card">
+              <h3>Receive payment</h3>
+              <p class="card-copy">Record an incoming mock payment from another user.</p>
+              <form id="receiveForm" class="transaction-form">
+                <label>
+                  Sender username
+                  <input type="text" id="receiveSender" placeholder="e.g. david" required />
+                </label>
+                <label>
+                  Amount
+                  <input type="number" id="receiveAmount" min="1" step="0.01" placeholder="250.00" required />
+                </label>
+                <button type="submit" class="primary-button">Receive funds</button>
+                <p class="form-help">No real money moves. This updates the demo balance instantly.</p>
+              </form>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
