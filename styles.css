@@ -695,8 +695,16 @@ input:focus {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  padding-bottom: 12px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.user-directory-item:hover {
+  background: var(--surface-muted);
+  transform: translateX(4px);
 }
 
 .user-directory-item:last-child {
@@ -1081,7 +1089,8 @@ input:focus {
   }
 
   .user-directory-item {
-    padding-bottom: 10px;
+    padding: 12px 14px;
+    border-radius: 10px;
   }
 
   .transaction-card {
@@ -1161,6 +1170,22 @@ input:focus {
 
   .balance-actions {
     grid-template-columns: 1fr;
+  }
+
+  .user-directory-item {
+    padding: 10px 12px;
+  }
+
+  .user-directory-name {
+    font-size: 0.88rem;
+  }
+
+  .user-directory-username {
+    font-size: 0.82rem;
+  }
+
+  .user-directory-balance {
+    font-size: 0.88rem;
   }
 }
 

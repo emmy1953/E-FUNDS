@@ -22,6 +22,7 @@ const elements = {
   sendRecipient: document.getElementById('sendRecipient'),
   sendAmount: document.getElementById('sendAmount'),
   recipientOptions: document.getElementById('recipientOptions'),
+  senderOptions: document.getElementById('senderOptions'),
   userDirectoryList: document.getElementById('userDirectoryList'),
   receiveForm: document.getElementById('receiveForm'),
   receiveSender: document.getElementById('receiveSender'),
@@ -120,12 +121,12 @@ function renderActivity(activity) {
   latest.forEach((entry) => {
     const item = document.createElement('li');
     item.className = 'activity-item';
-    
+
     const iconClass = entry.type === 'debit' ? 'debit' : 'credit';
     const icon = entry.type === 'debit' ? '⬆️' : '⬇️';
     const amountClass = entry.type === 'debit' ? 'debit' : 'credit';
     const amountPrefix = entry.type === 'debit' ? '-' : '+';
-    
+
     item.innerHTML = `
       <div class="activity-icon ${iconClass}">${icon}</div>
       <div class="activity-details">
@@ -149,21 +150,40 @@ function showNotification(message) {
   setTimeout(() => toast.remove(), 3600);
 }
 
+/**
+ * Render the available recipients list AND populate both the
+ * send-recipient and receive-sender <datalist> elements so that
+ * every newly-registered user is immediately visible everywhere.
+ */
 function renderRecipientDirectory(currentUsername) {
   const users = loadUsers();
-  const sortedUsers = Object.values(users).filter((user) => user.username !== currentUsername)
+  const sortedUsers = Object.values(users)
+    .filter((user) => user.username !== currentUsername)
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // 1) Clear & rebuild the recipient <datalist> (send form)
   elements.recipientOptions.innerHTML = '';
+  // 2) Clear & rebuild the sender <datalist> (receive form)
+  elements.senderOptions.innerHTML = '';
+  // 3) Clear & rebuild the clickable user-directory list
   elements.userDirectoryList.innerHTML = '';
 
   sortedUsers.forEach((user) => {
-    const option = document.createElement('option');
-    option.value = user.username;
-    elements.recipientOptions.appendChild(option);
+    // --- datalist option for send form ---
+    const sendOption = document.createElement('option');
+    sendOption.value = user.username;
+    elements.recipientOptions.appendChild(sendOption);
 
+    // --- datalist option for receive form ---
+    const recvOption = document.createElement('option');
+    recvOption.value = user.username;
+    elements.senderOptions.appendChild(recvOption);
+
+    // --- clickable directory item ---
     const item = document.createElement('li');
     item.className = 'user-directory-item';
+    item.setAttribute('data-username', user.username);
+    item.setAttribute('title', `Send to ${user.username}`);
     item.innerHTML = `
       <div>
         <strong class="user-directory-name">${user.name}</strong>
@@ -171,6 +191,14 @@ function renderRecipientDirectory(currentUsername) {
       </div>
       <div class="user-directory-balance">$${formatCurrency(user.balance)}</div>
     `;
+
+    // Clicking a directory entry auto-fills the send form and scrolls to it
+    item.addEventListener('click', () => {
+      elements.sendRecipient.value = user.username;
+      elements.sendForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      elements.sendAmount.focus();
+    });
+
     elements.userDirectoryList.appendChild(item);
   });
 }
@@ -259,12 +287,20 @@ function handleSignup(event) {
     password,
     balance: 5800.0,
     activity: [
-      { type: 'credit', label: 'Account opened', amount: 5800.0, timestamp: new Date().toLocaleString() },
+      {
+        type: 'credit',
+        label: 'Account opened',
+        amount: 5800.0,
+        timestamp: new Date().toLocaleString(),
+      },
     ],
   };
 
+  // Save new user to shared users object
   users[username] = newUser;
   saveUsers(users);
+
+  // Set this tab's context to the new user and render dashboard
   setCurrentUserUsername(username);
   renderDashboard(newUser);
   showDashboard();
@@ -273,15 +309,15 @@ function handleSignup(event) {
 }
 
 function addActivity(user, entry) {
-  user.activity.push({ 
-    ...entry, 
-    timestamp: new Date().toLocaleString('en-US', { 
-      month: 'numeric', 
-      day: 'numeric', 
+  user.activity.push({
+    ...entry,
+    timestamp: new Date().toLocaleString('en-US', {
+      month: 'numeric',
+      day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
-    })
+      minute: '2-digit',
+    }),
   });
 }
 
@@ -311,6 +347,7 @@ function handleSend(event) {
     return;
   }
 
+  // Debit sender, credit recipient
   sender.balance -= amount;
   recipient.balance += amount;
 
@@ -326,7 +363,11 @@ function handleSend(event) {
   });
 
   saveUsers(users);
-  renderDashboard(sender);
+
+  // Re-load fresh user data from localStorage and re-render
+  const freshUsers = loadUsers();
+  const freshSender = freshUsers[currentUsername];
+  renderDashboard(freshSender);
   elements.sendForm.reset();
   showNotification(`Mock payment of $${formatCurrency(amount)} sent to ${recipient.username}.`);
 }
@@ -357,6 +398,7 @@ function handleReceive(event) {
     return;
   }
 
+  // Debit sender, credit current user
   sender.balance -= amount;
   currentUser.balance += amount;
 
@@ -372,7 +414,13 @@ function handleReceive(event) {
   });
 
   saveUsers(users);
-  renderDashboard(currentUser);
+
+  // Re-load fresh user data from localStorage and re-render
+  // This ensures the balance display, activity, AND recipient directory
+  // (including any newly created accounts) are all up-to-date.
+  const freshUsers = loadUsers();
+  const freshCurrent = freshUsers[currentUsername];
+  renderDashboard(freshCurrent);
   elements.receiveForm.reset();
   showNotification(`Mock payment of $${formatCurrency(amount)} received from ${sender.username}.`);
 }

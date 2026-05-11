@@ -209,7 +209,7 @@
               <form id="receiveForm" class="transaction-form">
                 <label>
                   Sender username
-                  <input type="text" id="receiveSender" placeholder="e.g. david" required />
+                  <input type="text" id="receiveSender" list="senderOptions" placeholder="e.g. david" required />
                 </label>
                 <label>
                   Amount
@@ -218,6 +218,7 @@
                 <button type="submit" class="primary-button">Receive funds</button>
                 <p class="form-help">No real money moves. This updates the demo balance instantly.</p>
               </form>
+              <datalist id="senderOptions"></datalist>
             </article>
           </div>
         </section>
