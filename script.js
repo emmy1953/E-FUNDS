@@ -31,7 +31,14 @@ const elements = {
   themeToggleButton: document.getElementById('themeToggleButton'),
   sendQuickButton: document.querySelector('.send-quick'),
   receiveQuickButton: document.querySelector('.receive-quick'),
+  receiptPanel: document.getElementById('receiptPanel'),
+  receiptTitle: document.getElementById('receiptTitle'),
+  receiptContent: document.getElementById('receiptContent'),
+  downloadReceiptButton: document.getElementById('downloadReceiptButton'),
+  closeReceiptButton: document.getElementById('closeReceiptButton'),
 };
+
+let activeReceipt = null;
 
 const initialUsers = {
   david: {
@@ -115,6 +122,123 @@ function formatCurrency(value) {
   });
 }
 
+function createTransactionId() {
+  return `EF-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`;
+}
+
+function formatReceiptDate(timestamp) {
+  return timestamp || new Date().toLocaleString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function buildReceiptText(receipt) {
+  const directionLabel = receipt.type === 'debit' ? 'Funds sent' : 'Funds received';
+  return [
+    'E-FUNDS TRANSACTION RECEIPT',
+    'Digital Banking & Payments',
+    '',
+    `Receipt ID: ${receipt.transactionId}`,
+    `Status: Successful`,
+    `Date: ${formatReceiptDate(receipt.timestamp)}`,
+    `Type: ${directionLabel}`,
+    `Amount: $${formatCurrency(receipt.amount)}`,
+    '',
+    `Sender: ${receipt.senderName} (@${receipt.senderUsername})`,
+    `Recipient: ${receipt.recipientName} (@${receipt.recipientUsername})`,
+    '',
+    'This receipt was generated for a mock E-FUNDS demo transaction.',
+  ].join('\n');
+}
+
+function receiptFilename(receipt) {
+  const safeId = receipt.transactionId.replace(/[^a-z0-9-]/gi, '').toLowerCase();
+  return `efunds-receipt-${safeId}.txt`;
+}
+
+function downloadReceipt(receipt) {
+  const blob = new Blob([buildReceiptText(receipt)], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = receiptFilename(receipt);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function showReceipt(receipt) {
+  activeReceipt = receipt;
+  const directionLabel = receipt.type === 'debit' ? 'Funds sent' : 'Funds received';
+  elements.receiptTitle.textContent = directionLabel;
+  elements.receiptContent.innerHTML = '';
+
+  const rows = [
+    ['Receipt ID', receipt.transactionId],
+    ['Status', 'Successful'],
+    ['Date', formatReceiptDate(receipt.timestamp)],
+    ['Amount', `$${formatCurrency(receipt.amount)}`],
+    ['Sender', `${receipt.senderName} (@${receipt.senderUsername})`],
+    ['Recipient', `${receipt.recipientName} (@${receipt.recipientUsername})`],
+  ];
+
+  rows.forEach(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'receipt-row';
+
+    const labelElement = document.createElement('span');
+    labelElement.textContent = label;
+
+    const valueElement = document.createElement('strong');
+    valueElement.textContent = value;
+
+    row.append(labelElement, valueElement);
+    elements.receiptContent.appendChild(row);
+  });
+
+  elements.receiptPanel.classList.remove('hidden');
+  elements.receiptPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function hideReceipt() {
+  activeReceipt = null;
+  elements.receiptPanel.classList.add('hidden');
+}
+
+function getReceiptFromActivityEntry(entry) {
+  if (!entry.transactionId || !entry.senderUsername || !entry.recipientUsername) {
+    return null;
+  }
+
+  return {
+    transactionId: entry.transactionId,
+    type: entry.type,
+    amount: entry.amount,
+    timestamp: entry.timestamp,
+    senderName: entry.senderName,
+    senderUsername: entry.senderUsername,
+    recipientName: entry.recipientName,
+    recipientUsername: entry.recipientUsername,
+  };
+}
+
+function findReceiptById(transactionId) {
+  const users = loadUsers();
+  const currentUsername = getCurrentUserUsername();
+  const currentUser = users[currentUsername];
+  if (!currentUser) {
+    return null;
+  }
+
+  const entry = currentUser.activity.find((item) => item.transactionId === transactionId);
+  return entry ? getReceiptFromActivityEntry(entry) : null;
+}
+
 function renderActivity(activity) {
   const fragment = document.createDocumentFragment();
   const latest = [...activity].reverse().slice(0, 6);
@@ -126,12 +250,16 @@ function renderActivity(activity) {
     const icon = entry.type === 'debit' ? '⬆️' : '⬇️';
     const amountClass = entry.type === 'debit' ? 'debit' : 'credit';
     const amountPrefix = entry.type === 'debit' ? '-' : '+';
+    const receiptButton = entry.transactionId
+      ? `<button class="receipt-link" type="button" data-receipt-id="${entry.transactionId}">Generate receipt</button>`
+      : '';
 
     item.innerHTML = `
       <div class="activity-icon ${iconClass}">${icon}</div>
       <div class="activity-details">
         <strong>${entry.label}</strong>
         <span>${entry.timestamp}</span>
+        ${receiptButton}
       </div>
       <div class="activity-amount ${amountClass}">${amountPrefix}$${formatCurrency(entry.amount)}</div>
     `;
@@ -208,6 +336,7 @@ function renderDashboard(user) {
   elements.balanceAmount.textContent = formatCurrency(user.balance);
   renderActivity(user.activity);
   renderRecipientDirectory(user.username);
+  hideReceipt();
 }
 
 function showDashboard() {
@@ -309,16 +438,19 @@ function handleSignup(event) {
 }
 
 function addActivity(user, entry) {
-  user.activity.push({
-    ...entry,
-    timestamp: new Date().toLocaleString('en-US', {
-      month: 'numeric',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
+  const timestamp = new Date().toLocaleString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
+  const activityEntry = {
+    ...entry,
+    timestamp,
+  };
+  user.activity.push(activityEntry);
+  return activityEntry;
 }
 
 function handleSend(event) {
@@ -348,18 +480,29 @@ function handleSend(event) {
   }
 
   // Debit sender, credit recipient
+  const transactionId = createTransactionId();
   sender.balance -= amount;
   recipient.balance += amount;
 
-  addActivity(sender, {
+  const senderReceipt = addActivity(sender, {
     type: 'debit',
     label: `Sent to ${recipient.name} (${recipient.username})`,
     amount,
+    transactionId,
+    senderName: sender.name,
+    senderUsername: sender.username,
+    recipientName: recipient.name,
+    recipientUsername: recipient.username,
   });
   addActivity(recipient, {
     type: 'credit',
     label: `Received from ${sender.name} (${sender.username})`,
     amount,
+    transactionId,
+    senderName: sender.name,
+    senderUsername: sender.username,
+    recipientName: recipient.name,
+    recipientUsername: recipient.username,
   });
 
   saveUsers(users);
@@ -368,6 +511,7 @@ function handleSend(event) {
   const freshUsers = loadUsers();
   const freshSender = freshUsers[currentUsername];
   renderDashboard(freshSender);
+  showReceipt(getReceiptFromActivityEntry(senderReceipt));
   elements.sendForm.reset();
   showNotification(`Mock payment of $${formatCurrency(amount)} sent to ${recipient.username}.`);
 }
@@ -399,18 +543,29 @@ function handleReceive(event) {
   }
 
   // Debit sender, credit current user
+  const transactionId = createTransactionId();
   sender.balance -= amount;
   currentUser.balance += amount;
 
-  addActivity(currentUser, {
+  const currentUserReceipt = addActivity(currentUser, {
     type: 'credit',
     label: `Received from ${sender.name} (${sender.username})`,
     amount,
+    transactionId,
+    senderName: sender.name,
+    senderUsername: sender.username,
+    recipientName: currentUser.name,
+    recipientUsername: currentUser.username,
   });
   addActivity(sender, {
     type: 'debit',
     label: `Sent to ${currentUser.name} (${currentUser.username})`,
     amount,
+    transactionId,
+    senderName: sender.name,
+    senderUsername: sender.username,
+    recipientName: currentUser.name,
+    recipientUsername: currentUser.username,
   });
 
   saveUsers(users);
@@ -421,12 +576,14 @@ function handleReceive(event) {
   const freshUsers = loadUsers();
   const freshCurrent = freshUsers[currentUsername];
   renderDashboard(freshCurrent);
+  showReceipt(getReceiptFromActivityEntry(currentUserReceipt));
   elements.receiveForm.reset();
   showNotification(`Mock payment of $${formatCurrency(amount)} received from ${sender.username}.`);
 }
 
 function handleSignOut() {
   clearCurrentUser();
+  hideReceipt();
   showAuth();
 }
 
@@ -440,6 +597,26 @@ function initEventListeners() {
   elements.receiveForm.addEventListener('submit', handleReceive);
   elements.signOutButton.addEventListener('click', handleSignOut);
   elements.themeToggleButton.addEventListener('click', toggleTheme);
+  elements.activityList.addEventListener('click', (event) => {
+    const receiptButton = event.target.closest('.receipt-link');
+    if (!receiptButton) {
+      return;
+    }
+
+    const receipt = findReceiptById(receiptButton.dataset.receiptId);
+    if (receipt) {
+      showReceipt(receipt);
+    }
+  });
+  elements.downloadReceiptButton.addEventListener('click', () => {
+    if (activeReceipt) {
+      downloadReceipt(activeReceipt);
+      showNotification('Receipt downloaded.');
+    }
+  });
+  elements.closeReceiptButton.addEventListener('click', () => {
+    hideReceipt();
+  });
   elements.getStartedButton.addEventListener('click', showAuth);
   elements.backToWelcomeButton.addEventListener('click', showWelcome);
   elements.sendQuickButton.addEventListener('click', () => {

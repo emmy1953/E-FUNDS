@@ -277,7 +277,8 @@ button {
    =========================== */
 .auth-panel__card,
 .summary-card,
-.transaction-card {
+.transaction-card,
+.receipt-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 24px;
@@ -648,6 +649,23 @@ input:focus {
   font-size: 0.9rem;
 }
 
+.receipt-link {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  border-radius: 10px;
+  background: rgba(96, 165, 250, 0.1);
+  color: var(--accent-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.receipt-link:hover {
+  background: rgba(96, 165, 250, 0.16);
+}
+
 .activity-amount {
   font-weight: 700;
   text-align: right;
@@ -738,6 +756,66 @@ input:focus {
   font-size: 0.92rem;
 }
 
+.receipt-card {
+  margin-top: 24px;
+  padding: 28px;
+}
+
+.receipt-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.receipt-card__header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.receipt-preview {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface-strong);
+}
+
+.receipt-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.45fr) 1fr;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.receipt-row:last-child {
+  border-bottom: none;
+}
+
+.receipt-row span {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+}
+
+.receipt-row strong {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  text-align: right;
+  word-break: break-word;
+}
+
+.receipt-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.receipt-actions .primary-button {
+  padding: 0 22px;
+}
+
 /* ===========================
    Desktop (≥1024px)
    =========================== */
@@ -795,7 +873,8 @@ input:focus {
 
   .auth-panel__card,
   .transaction-card,
-  .summary-card {
+  .summary-card,
+  .receipt-card {
     padding: 24px;
   }
 
@@ -818,6 +897,15 @@ input:focus {
 
   .activity-details span {
     font-size: 0.82rem;
+  }
+
+  .receipt-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .receipt-row strong {
+    text-align: left;
   }
 }
 
@@ -1098,6 +1186,11 @@ input:focus {
     border-radius: 18px;
   }
 
+  .receipt-card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+
   .transaction-card h3 {
     font-size: 1.05rem;
     margin-bottom: 10px;
@@ -1114,6 +1207,14 @@ input:focus {
 
   .form-help {
     font-size: 0.85rem;
+  }
+
+  .receipt-card__header {
+    align-items: center;
+  }
+
+  .receipt-actions {
+    display: grid;
   }
 }
 

@@ -38,22 +38,22 @@
 
               <div class="features-grid">
                 <div class="feature">
-                  <span class="feature-icon">💳</span>
+                  <span class="feature-icon"></span>
                   <h3>Instant Transfers</h3>
                   <p>Send funds to any user instantly using their username.</p>
                 </div>
                 <div class="feature">
-                  <span class="feature-icon">🔒</span>
+                  <span class="feature-icon"></span>
                   <h3>Secure</h3>
                   <p>Your transactions are protected with modern security practices.</p>
                 </div>
                 <div class="feature">
-                  <span class="feature-icon">📱</span>
+                  <span class="feature-icon"></span>
                   <h3>Easy to Use</h3>
                   <p>Simple interface designed for everyone.</p>
                 </div>
                 <div class="feature">
-                  <span class="feature-icon">🌙</span>
+                  <span class="feature-icon"></span>
                   <h3>Dark Mode</h3>
                   <p>Switch between light and dark themes for your comfort.</p>
                 </div>
@@ -221,6 +221,20 @@
               <datalist id="senderOptions"></datalist>
             </article>
           </div>
+
+          <article class="receipt-card hidden" id="receiptPanel">
+            <div class="receipt-card__header">
+              <div>
+                <p class="eyebrow">Transaction receipt</p>
+                <h3 id="receiptTitle">Receipt ready</h3>
+              </div>
+              <button id="closeReceiptButton" class="icon-button" title="Close receipt">&times;</button>
+            </div>
+            <div class="receipt-preview" id="receiptContent"></div>
+            <div class="receipt-actions">
+              <button id="downloadReceiptButton" class="primary-button">Download receipt</button>
+            </div>
+          </article>
         </section>
       </main>
     </div>
@@ -228,3 +242,4 @@
     <script src="script.js"></script>
   </body>
 </html>
+
